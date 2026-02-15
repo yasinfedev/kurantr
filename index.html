@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ramazan Kur’an Okuma | v0.1</title>
+  <title>Ramazan Kur’an Okuma | v0.2</title>
 
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,7 +15,16 @@
       --muted:#6c757d;
       --shadow: 0 10px 30px rgba(0,0,0,.08);
       --radius: 20px;
+
+      /* ✅ Yeşil tema */
+      --g900:#0b3d2e;   /* koyu yeşil */
+      --g700:#146c43;   /* yeşil */
+      --g200:#dff3ea;   /* açık yeşil */
+      --g100:#eef9f4;   /* daha açık */
+      --gray100:#f7f8fa;/* açık gri */
+      --border: rgba(0,0,0,.08);
     }
+
     body{
       background: radial-gradient(1200px 600px at 10% 10%, #ffffff 0%, var(--bg) 55%, #eef2f6 100%);
       min-height:100vh;
@@ -26,14 +35,22 @@
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(0,0,0,.06);
     }
+    .brand-badge{
+      display:inline-flex; align-items:center; gap:.6rem;
+      background: var(--card);
+      padding:.55rem 1rem;
+      border-radius:999px;
+      box-shadow: var(--shadow);
+      border:1px solid rgba(0,0,0,.06);
+      font-weight:800;
+    }
+
     .cardx{
       background:var(--card);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       border:1px solid rgba(0,0,0,.06);
     }
-    .screen{ display:none; width:100%; }
-    .screen.active{ display:block; }
 
     @media (min-width: 992px){
       .two-col{
@@ -44,28 +61,69 @@
       }
     }
 
+    /* ✅ Yeşil buton seti */
+    .btn-green{
+      background: var(--g700);
+      border-color: var(--g700);
+      color: #fff;
+      font-weight: 800;
+      border-radius: 14px;
+      padding: .7rem 1rem;
+    }
+    .btn-green:hover{
+      background: #115b39;
+      border-color: #115b39;
+      color:#fff;
+    }
+    .btn-green-outline{
+      background: #fff;
+      border: 2px solid rgba(20,108,67,.25);
+      color: var(--g700);
+      font-weight: 850;
+      border-radius: 14px;
+      padding: .7rem 1rem;
+    }
+    .btn-green-outline:hover{
+      background: var(--g100);
+      border-color: rgba(20,108,67,.35);
+      color: var(--g900);
+    }
+
+    .crumb{
+      border-radius:999px;
+      padding:.45rem .8rem;
+      font-weight: 900;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    /* Sağ panel sure pill */
     .sure-pill{
       border-radius:999px;
       padding:.5rem .85rem;
       border:1px solid rgba(0,0,0,.10);
       background:#fff;
-      font-weight:800;
+      font-weight:850;
       display:inline-flex;
       gap:.5rem;
       align-items:center;
       cursor:pointer;
       user-select:none;
-      transition: transform .12s ease, box-shadow .12s ease;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
     }
     .sure-pill:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.08); }
+    .sure-pill.active{
+      background: var(--g100);
+      border-color: rgba(20,108,67,.25);
+    }
 
     .ayat-btn{
       text-align:left;
       width:100%;
       border-radius: 14px;
       padding: .85rem 1rem;
-      font-weight: 800;
-      background: #f8f9fb;
+      font-weight: 850;
+      background: var(--gray100);
       border: 2px solid rgba(0,0,0,.10);
       transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
     }
@@ -75,10 +133,15 @@
       background:#fff;
       border-color: rgba(0,0,0,.18);
     }
+    .ayat-btn.read{
+      background: var(--g200);
+      border-color: rgba(20,108,67,.28);
+    }
 
     .muted{ color: var(--muted); }
+
     .meal{
-      font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+      font-size: clamp(1.05rem, 1.5vw, 1.28rem);
       line-height: 1.55;
       font-weight: 650;
       letter-spacing: -.01em;
@@ -87,64 +150,114 @@
       font-size: .92rem;
       color: var(--muted);
     }
+
+    /* Search input */
+    .searchbox{
+      border-radius: 14px !important;
+      border: 2px solid rgba(20,108,67,.18) !important;
+      background: #fff;
+      font-weight: 700;
+    }
+    .searchbox:focus{
+      box-shadow: 0 0 0 .2rem rgba(20,108,67,.12) !important;
+      border-color: rgba(20,108,67,.30) !important;
+    }
+
+    /* Mini list item */
+    .mini-item{
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+      padding: .65rem .75rem;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .mini-item:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      background: var(--g100);
+    }
   </style>
 </head>
-<body>
 
+<body>
   <!-- TOPBAR -->
   <div class="topbar py-3">
     <div class="container-fluid px-3 px-md-4 d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-2">
-        <span class="badge text-bg-dark rounded-pill">RAMAZAN v1.1</span>
-        <span class="fw-bold">Kur’an Okuma Modülü | Sol: Ayet / Sağ: İndeks</span>
+      <div class="brand-badge">
+        <span class="badge rounded-pill" style="background:var(--g900)">RAMAZAN v1.2</span>
+        <span>Kur’an Okuma Modülü | v0.2</span>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <span id="crumbPill" class="badge text-bg-light border text-dark">Ana İndeks</span>
-      </div>
+      <div class="crumb" id="crumbPill">Ana İndeks</div>
     </div>
   </div>
 
   <div class="container-fluid px-3 px-md-4 py-4">
     <div class="two-col">
 
-      <!-- LEFT: CONTENT -->
+      <!-- LEFT -->
       <div class="cardx p-4">
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
           <div>
             <div class="fw-bold fs-4" id="leftTitle">Hoş geldin 👋</div>
-            <div class="muted" id="leftSubtitle">Sağdan bir sure seç; sonra ayet seç.</div>
+            <div class="muted" id="leftSubtitle">Sağdan sure seç; sonra ayet seç.</div>
           </div>
 
           <div class="d-flex flex-wrap gap-2">
-            <button id="btnBackHome" class="btn btn-outline-secondary fw-bold">Ana indekse dön</button>
-            <button id="btnBackSurah" class="btn btn-outline-secondary fw-bold d-none">Sure indeksine dön</button>
+            <button id="btnBackHome" class="btn btn-green-outline">Ana indekse dön</button>
+            <button id="btnBackSurah" class="btn btn-green-outline d-none">Sure indeksine dön</button>
           </div>
         </div>
 
         <hr class="my-3">
 
         <div id="leftBody">
-          <div class="alert alert-secondary mb-0">
-            Sağ panelden bir sure seçerek başlayabilirsin.  
-            Ayet seçtiğinde burada Türkçe meal + dipnot/ek bilgiler görünecek.
+          <div class="alert mb-0" style="background:var(--gray100); border:1px solid rgba(0,0,0,.08);">
+            Sağ panelden bir sure seçerek başlayabilirsin.
           </div>
         </div>
 
         <hr class="my-3">
 
-        <div class="d-flex flex-wrap gap-2 justify-content-between">
-          <button id="btnPrev" class="btn btn-dark fw-bold" disabled>← Önceki ayet</button>
-          <button id="btnNext" class="btn btn-dark fw-bold" disabled>Sonraki ayet →</button>
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <button id="btnPrev" class="btn btn-green" disabled>← Önceki ayet</button>
+
+          <div class="d-flex align-items-center gap-2">
+            <button id="btnMarkRead" class="btn btn-green-outline d-none">✅ Okundu</button>
+            <button id="btnMarkUnread" class="btn btn-green-outline d-none">↩︎ Okunmadı</button>
+          </div>
+
+          <button id="btnNext" class="btn btn-green" disabled>Sonraki ayet →</button>
+        </div>
+
+        <div class="mt-3 muted" id="readHint" style="display:none;">
+          “Okundu” işaretlediğin ayetler kaydedilir ve sure/ayet listesinde yeşil görünür.
         </div>
       </div>
 
-      <!-- RIGHT: NAV -->
+      <!-- RIGHT -->
       <div class="cardx p-4">
         <div class="d-flex align-items-center justify-content-between">
           <div class="fw-bold fs-5" id="rightTitle">Sureler (A-Z)</div>
-          <span class="badge text-bg-dark rounded-pill" id="rightBadge">0</span>
+          <span class="badge rounded-pill" style="background:var(--g900)" id="rightBadge">0</span>
         </div>
-        <div class="muted mt-1" id="rightHint">Bir sure seç.</div>
+        <div class="muted mt-1" id="rightHint">Arama yap veya bir sure seç.</div>
+
+        <div class="mt-3">
+          <input id="searchInput" class="form-control searchbox" placeholder="Sure ara (örn: Yâsîn, Fâtiha, İhlâs)..." />
+        </div>
+
+        <hr class="my-3">
+
+        <!-- ✅ Bugün okuduklarım -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-bold">Bugün okuduklarım</div>
+            <button id="btnClearToday" class="btn btn-sm btn-green-outline">Temizle</button>
+          </div>
+          <div class="muted mb-2">Bugün açtığın ayetler burada listelenir.</div>
+          <div id="todayList" class="d-grid gap-2"></div>
+        </div>
 
         <hr class="my-3">
 
@@ -158,9 +271,6 @@
     /***********************
      *  DATA (SEN DOLDURACAKSIN)
      ***********************/
-    // DB yapısı:
-    // DB.surahs = [{ id, nameTr, order, letter, ayatCount? }]
-    // DB.verses[surahId] = [{ ayah, mealTr, info, footnote }]
     const DB = {
       surahs: [
         { id: "fatiha", nameTr: "Fâtiha", order: 1, letter: "F" },
@@ -168,13 +278,13 @@
       ],
       verses: {
         fatiha: [
-          { ayah: 1, mealTr: "Rahmân ve Rahîm olan Allah’ın adıyla.", info: "Kısa not: besmele.", footnote: "Dipnot örneği." },
+          { ayah: 1, mealTr: "Rahmân ve Rahîm olan Allah’ın adıyla.", info: "Besmele.", footnote: "" },
           { ayah: 2, mealTr: "Hamd âlemlerin Rabbi Allah’a mahsustur.", info: "Hamd kavramı.", footnote: "" },
           { ayah: 3, mealTr: "O, Rahmân’dır ve Rahîm’dir.", info: "", footnote: "" },
         ],
         ikhlas: [
           { ayah: 1, mealTr: "De ki: O Allah birdir.", info: "", footnote: "" },
-          { ayah: 2, mealTr: "Allah Samed’dir.", info: "Samed: Her şeyin O’na muhtaç olması.", footnote: "" },
+          { ayah: 2, mealTr: "Allah Samed’dir.", info: "Samed: Her şey O’na muhtaç.", footnote: "" },
           { ayah: 3, mealTr: "Doğurmamış ve doğurulmamıştır.", info: "", footnote: "" },
           { ayah: 4, mealTr: "Hiçbir şey O’na denk değildir.", info: "", footnote: "" },
         ],
@@ -182,101 +292,184 @@
     };
 
     /***********************
+     *  STORAGE KEYS
+     ***********************/
+    const LS_READ = "quran_read_map_v1";        // { "surahId:ayahNo": true }
+    const LS_TODAY = "quran_today_list_v1";     // { date:"YYYY-MM-DD", items:[{surahId, ayahNo, ts}] }
+
+    /***********************
      *  STATE
      ***********************/
     const state = {
-      view: "HOME",       // HOME | SURAH | AYAH
+      view: "HOME", // HOME | SURAH | AYAH
       selectedSurahId: null,
-      selectedAyahIndex: null, // index in DB.verses[surahId]
+      selectedAyahIndex: null,
+      search: "",
+      readMap: loadReadMap(),
+      today: loadToday(),
     };
 
     const $ = (id) => document.getElementById(id);
 
     /***********************
-     *  RENDERERS
+     *  UTILS
      ***********************/
+    function escapeHtml(s){
+      return (s||"").replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    function todayKey(){
+      const d = new Date();
+      // local date YYYY-MM-DD
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function readId(surahId, ayahNo){
+      return `${surahId}:${ayahNo}`;
+    }
+
+    function loadReadMap(){
+      try{
+        return JSON.parse(localStorage.getItem(LS_READ) || "{}");
+      }catch(e){ return {}; }
+    }
+
+    function saveReadMap(){
+      localStorage.setItem(LS_READ, JSON.stringify(state.readMap || {}));
+    }
+
+    function loadToday(){
+      try{
+        const obj = JSON.parse(localStorage.getItem(LS_TODAY) || "null");
+        if(!obj || obj.date !== todayKey()) return { date: todayKey(), items: [] };
+        if(!Array.isArray(obj.items)) obj.items = [];
+        return obj;
+      }catch(e){
+        return { date: todayKey(), items: [] };
+      }
+    }
+
+    function saveToday(){
+      localStorage.setItem(LS_TODAY, JSON.stringify(state.today));
+    }
+
+    function pushTodayItem(surahId, ayahNo){
+      // aynı ayeti tekrar tekrar eklemeyelim: en üste taşıyalım
+      const items = state.today.items || [];
+      const key = readId(surahId, ayahNo);
+
+      const filtered = items.filter(x => readId(x.surahId, x.ayahNo) !== key);
+      filtered.unshift({ surahId, ayahNo, ts: Date.now() });
+
+      state.today.items = filtered.slice(0, 12); // max 12
+      saveToday();
+    }
+
     function setCrumb(text){
       $("crumbPill").textContent = text;
     }
 
-    function renderHome(){
-      state.view = "HOME";
-      state.selectedSurahId = null;
-      state.selectedAyahIndex = null;
-
-      setCrumb("Ana İndeks");
-      $("btnBackSurah").classList.add("d-none");
-
-      $("leftTitle").textContent = "Hoş geldin 👋";
-      $("leftSubtitle").textContent = "Sağdan bir sure seç; sonra ayet seç.";
-
-      $("leftBody").innerHTML = `
-        <div class="alert alert-secondary mb-0">
-          Sağ panelden bir sure seçerek başlayabilirsin.  
-          Ayet seçtiğinde burada Türkçe meal + dipnot/ek bilgiler görünecek.
-        </div>
-      `;
-
-      $("btnPrev").disabled = true;
-      $("btnNext").disabled = true;
-
-      renderSurahList();
+    function getSurahById(id){
+      return DB.surahs.find(s=>s.id===id);
     }
 
+    function getVerses(surahId){
+      return DB.verses[surahId] || [];
+    }
+
+    function isRead(surahId, ayahNo){
+      return !!state.readMap[readId(surahId, ayahNo)];
+    }
+
+    function setRead(surahId, ayahNo, val){
+      const k = readId(surahId, ayahNo);
+      if(val) state.readMap[k] = true;
+      else delete state.readMap[k];
+      saveReadMap();
+    }
+
+    /***********************
+     *  RENDER: TODAY LIST
+     ***********************/
+    function renderToday(){
+      const wrap = $("todayList");
+      wrap.innerHTML = "";
+
+      const items = state.today.items || [];
+      if(items.length === 0){
+        wrap.innerHTML = `<div class="muted">Bugün henüz ayet açmadın.</div>`;
+        return;
+      }
+
+      items.forEach(it=>{
+        const s = getSurahById(it.surahId);
+        const div = document.createElement("div");
+        div.className = "mini-item";
+        div.innerHTML = `
+          <div class="d-flex align-items-center justify-content-between gap-2">
+            <div class="fw-bold">${escapeHtml(s?.nameTr || it.surahId)} <span class="badge rounded-pill ms-1" style="background:var(--g700)">Ayet ${it.ayahNo}</span></div>
+            <div>
+              ${isRead(it.surahId, it.ayahNo) ? `<span class="badge rounded-pill" style="background:var(--g900)">Okundu</span>` : `<span class="badge text-bg-light border text-dark">—</span>`}
+            </div>
+          </div>
+        `;
+        div.addEventListener("click", ()=>{
+          // sure + ayet aç
+          openSurah(it.surahId, { keepSearch:true });
+          const verses = getVerses(it.surahId);
+          const idx = verses.findIndex(v=>v.ayah === it.ayahNo);
+          if(idx >= 0) openAyah(idx, { fromToday:true });
+        });
+        wrap.appendChild(div);
+      });
+    }
+
+    /***********************
+     *  RENDER: SURAH LIST (FILTERED)
+     ***********************/
     function renderSurahList(){
       $("rightTitle").textContent = "Sureler (A-Z)";
-      $("rightHint").textContent = "Bir sure seç.";
+      $("rightHint").textContent = "Arama yap veya bir sure seç.";
       const body = $("rightBody");
       body.innerHTML = "";
 
-      // alfabetik
-      const sorted = DB.surahs.slice().sort((a,b)=> a.nameTr.localeCompare(b.nameTr, "tr"));
+      const q = (state.search || "").trim().toLocaleLowerCase("tr");
+
+      const sorted = DB.surahs
+        .slice()
+        .sort((a,b)=> a.nameTr.localeCompare(b.nameTr, "tr"))
+        .filter(s => !q || s.nameTr.toLocaleLowerCase("tr").includes(q));
+
       $("rightBadge").textContent = sorted.length;
 
       sorted.forEach(s=>{
-        const count = (DB.verses[s.id] || []).length;
+        const verses = getVerses(s.id);
+        const readCount = verses.filter(v=> isRead(s.id, v.ayah)).length;
+
         const el = document.createElement("div");
-        el.className = "sure-pill";
+        el.className = "sure-pill" + (state.selectedSurahId === s.id ? " active" : "");
         el.innerHTML = `
-          <span class="badge text-bg-dark rounded-pill">${escapeHtml(s.letter)}</span>
+          <span class="badge rounded-pill" style="background:var(--g900)">${escapeHtml(s.letter)}</span>
           <span>${escapeHtml(s.nameTr)}</span>
-          <span class="badge text-bg-light border text-dark">${count}</span>
+          <span class="badge text-bg-light border text-dark">${verses.length}</span>
+          ${readCount > 0 ? `<span class="badge rounded-pill" style="background:var(--g700)">${readCount}✓</span>` : ``}
         `;
         el.addEventListener("click", ()=> openSurah(s.id));
         body.appendChild(el);
       });
     }
 
-    function openSurah(surahId){
-      state.view = "SURAH";
-      state.selectedSurahId = surahId;
-      state.selectedAyahIndex = null;
-
-      const s = DB.surahs.find(x=>x.id===surahId);
-      const verses = DB.verses[surahId] || [];
-
-      setCrumb(`Sure: ${s?.nameTr || "-"}`);
-      $("btnBackSurah").classList.add("d-none");
-
-      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet listesi`;
-      $("leftSubtitle").textContent = `Toplam kayıtlı ayet: ${verses.length}`;
-
-      $("leftBody").innerHTML = `
-        <div class="cardx p-3">
-          <div class="fw-bold mb-2">Ayet seç</div>
-          <div class="muted">Sağ panelden ayet numarasına tıklayarak meali aç.</div>
-        </div>
-      `;
-
-      $("btnPrev").disabled = true;
-      $("btnNext").disabled = true;
-
-      renderAyahList(surahId);
-    }
-
+    /***********************
+     *  RENDER: AYAH LIST
+     ***********************/
     function renderAyahList(surahId){
-      const s = DB.surahs.find(x=>x.id===surahId);
-      const verses = DB.verses[surahId] || [];
+      const s = getSurahById(surahId);
+      const verses = getVerses(surahId);
 
       $("rightTitle").textContent = `${s?.nameTr || "Sure"} — Ayetler`;
       $("rightHint").textContent = "Bir ayet seç.";
@@ -287,62 +480,125 @@
 
       verses.forEach((v, idx)=>{
         const btn = document.createElement("button");
-        btn.className = "ayat-btn btn";
-        btn.innerHTML = `<span class="badge text-bg-dark rounded-pill me-2">${v.ayah}</span> <span class="fw-bold">Ayet ${v.ayah}</span>`;
+        const read = isRead(surahId, v.ayah);
+        btn.className = "ayat-btn btn" + (read ? " read" : "");
+        btn.innerHTML = `
+          <span class="badge rounded-pill me-2" style="background:var(--g900)">${v.ayah}</span>
+          <span class="fw-bold">Ayet ${v.ayah}</span>
+          ${read ? `<span class="badge rounded-pill ms-2" style="background:var(--g700)">Okundu</span>` : ``}
+        `;
         btn.addEventListener("click", ()=> openAyah(idx));
         body.appendChild(btn);
       });
 
-      // sağ panelde üstte “sure indeksine dön” gibi bir mini buton da ekleyelim:
       const back = document.createElement("button");
-      back.className = "btn btn-outline-secondary fw-bold w-100 mt-2";
+      back.className = "btn btn-green-outline w-100 mt-2";
       back.textContent = "← Sure listesine dön";
       back.addEventListener("click", ()=>{
-        // surah listesine dön (home değil)
         state.view = "HOME";
         state.selectedSurahId = null;
         state.selectedAyahIndex = null;
         setCrumb("Ana İndeks");
         $("btnBackSurah").classList.add("d-none");
-        $("leftTitle").textContent = "Sure seç";
-        $("leftSubtitle").textContent = "Sağdan bir sure seç.";
-        $("leftBody").innerHTML = `<div class="alert alert-secondary mb-0">Sağ panelden bir sure seç.</div>`;
+        $("btnMarkRead").classList.add("d-none");
+        $("btnMarkUnread").classList.add("d-none");
+        $("readHint").style.display = "none";
         $("btnPrev").disabled = true;
         $("btnNext").disabled = true;
+
+        $("leftTitle").textContent = "Sure seç";
+        $("leftSubtitle").textContent = "Sağdan bir sure seç.";
+        $("leftBody").innerHTML = `<div class="alert mb-0" style="background:var(--gray100); border:1px solid rgba(0,0,0,.08);">Sağ panelden bir sure seç.</div>`;
+
         renderSurahList();
       });
       body.appendChild(back);
     }
 
-    function openAyah(index){
+    /***********************
+     *  OPEN: SURAH / AYAH
+     ***********************/
+    function openSurah(surahId, opts={}){
+      state.view = "SURAH";
+      state.selectedSurahId = surahId;
+      state.selectedAyahIndex = null;
+
+      const s = getSurahById(surahId);
+      const verses = getVerses(surahId);
+
+      setCrumb(`Sure: ${s?.nameTr || "-"}`);
+      $("btnBackSurah").classList.add("d-none");
+
+      $("btnMarkRead").classList.add("d-none");
+      $("btnMarkUnread").classList.add("d-none");
+      $("readHint").style.display = "none";
+
+      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet listesi`;
+      $("leftSubtitle").textContent = `Toplam kayıtlı ayet: ${verses.length}`;
+
+      const readCount = verses.filter(v=> isRead(surahId, v.ayah)).length;
+
+      $("leftBody").innerHTML = `
+        <div class="cardx p-3" style="background:var(--g100); border-color: rgba(20,108,67,.18);">
+          <div class="fw-bold mb-1">Ayet seç</div>
+          <div class="muted">Sağ panelden ayet numarasına tıkla.</div>
+          <hr class="my-2">
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge text-bg-light border text-dark">Kayıtlı: ${verses.length}</span>
+            <span class="badge rounded-pill" style="background:var(--g700)">Okundu: ${readCount}</span>
+          </div>
+        </div>
+      `;
+
+      $("btnPrev").disabled = true;
+      $("btnNext").disabled = true;
+
+      renderAyahList(surahId);
+
+      // sure listesindeki aktif pill güncellensin istenirse:
+      if(!opts.keepSearch){
+        // arama kutusunu bozma, sadece pill için gerek yok
+      }
+    }
+
+    function openAyah(index, opts={}){
       state.view = "AYAH";
       state.selectedAyahIndex = index;
 
       const surahId = state.selectedSurahId;
-      const s = DB.surahs.find(x=>x.id===surahId);
-      const verses = DB.verses[surahId] || [];
+      const s = getSurahById(surahId);
+      const verses = getVerses(surahId);
       const v = verses[index];
 
-      setCrumb(`${s?.nameTr || "Sure"} / Ayet ${v?.ayah ?? "-"}`);
+      if(!v) return;
+
+      // ✅ Bugün okuduklarım listesine ekle
+      pushTodayItem(surahId, v.ayah);
+      renderToday();
+
+      setCrumb(`${s?.nameTr || "Sure"} / Ayet ${v.ayah}`);
       $("btnBackSurah").classList.remove("d-none");
 
-      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet ${v?.ayah ?? ""}`;
+      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet ${v.ayah}`;
       $("leftSubtitle").textContent = "Türkçe meal";
 
       $("leftBody").innerHTML = `
-        <div class="cardx p-4">
+        <div class="cardx p-4" style="border-color: rgba(20,108,67,.14);">
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
             <div class="fw-bold fs-5">${escapeHtml(s?.nameTr || "")}</div>
-            <span class="badge text-bg-dark rounded-pill">Ayet ${v?.ayah ?? ""}</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-pill" style="background:var(--g900)">Ayet ${v.ayah}</span>
+              ${isRead(surahId, v.ayah) ? `<span class="badge rounded-pill" style="background:var(--g700)">Okundu</span>` : ``}
+            </div>
           </div>
 
-          <div class="meal">${escapeHtml(v?.mealTr || "—")}</div>
+          <div class="meal">${escapeHtml(v.mealTr || "—")}</div>
 
           <hr class="my-3">
 
           <div class="meta">
-            <div><span class="fw-bold">Ek bilgi:</span> ${escapeHtml(v?.info || "—")}</div>
-            <div class="mt-2"><span class="fw-bold">Dipnot:</span> ${escapeHtml(v?.footnote || "—")}</div>
+            <div><span class="fw-bold">Ek bilgi:</span> ${escapeHtml(v.info || "—")}</div>
+            <div class="mt-2"><span class="fw-bold">Dipnot:</span> ${escapeHtml(v.footnote || "—")}</div>
           </div>
         </div>
       `;
@@ -350,12 +606,47 @@
       // prev/next
       $("btnPrev").disabled = (index <= 0);
       $("btnNext").disabled = (index >= verses.length - 1);
+
+      // ✅ Okundu toggle butonları
+      const read = isRead(surahId, v.ayah);
+      $("btnMarkRead").classList.toggle("d-none", read);
+      $("btnMarkUnread").classList.toggle("d-none", !read);
+      $("readHint").style.display = "block";
+
+      // sağ panel ayet listesinde okundu rozetleri güncellensin
+      renderAyahList(surahId);
+      // sure listesinde okundu sayısı rozetleri güncellensin (home’da görünür)
+      // (Home’a dönünce zaten render edilecek)
     }
 
-    function escapeHtml(s){
-      return (s||"").replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-      }[m]));
+    /***********************
+     *  HOME
+     ***********************/
+    function renderHome(){
+      state.view = "HOME";
+      state.selectedSurahId = null;
+      state.selectedAyahIndex = null;
+
+      setCrumb("Ana İndeks");
+      $("btnBackSurah").classList.add("d-none");
+
+      $("btnMarkRead").classList.add("d-none");
+      $("btnMarkUnread").classList.add("d-none");
+      $("readHint").style.display = "none";
+
+      $("leftTitle").textContent = "Hoş geldin 👋";
+      $("leftSubtitle").textContent = "Sağdan sure seç; sonra ayet seç.";
+
+      $("leftBody").innerHTML = `
+        <div class="alert mb-0" style="background:var(--gray100); border:1px solid rgba(0,0,0,.08);">
+          Sağ panelden bir sure seçerek başlayabilirsin.
+        </div>
+      `;
+
+      $("btnPrev").disabled = true;
+      $("btnNext").disabled = true;
+
+      renderSurahList();
     }
 
     /***********************
@@ -364,7 +655,6 @@
     $("btnBackHome").addEventListener("click", renderHome);
 
     $("btnBackSurah").addEventListener("click", ()=>{
-      // ayetten sure ayet listesine dön
       if(state.selectedSurahId) openSurah(state.selectedSurahId);
       else renderHome();
     });
@@ -378,14 +668,54 @@
     $("btnNext").addEventListener("click", ()=>{
       if(state.view !== "AYAH") return;
       const surahId = state.selectedSurahId;
-      const verses = DB.verses[surahId] || [];
+      const verses = getVerses(surahId);
       const i = state.selectedAyahIndex ?? 0;
       if(i < verses.length - 1) openAyah(i + 1);
+    });
+
+    $("btnMarkRead").addEventListener("click", ()=>{
+      if(state.view !== "AYAH") return;
+      const surahId = state.selectedSurahId;
+      const verses = getVerses(surahId);
+      const v = verses[state.selectedAyahIndex];
+      if(!v) return;
+
+      setRead(surahId, v.ayah, true);
+      openAyah(state.selectedAyahIndex); // refresh
+    });
+
+    $("btnMarkUnread").addEventListener("click", ()=>{
+      if(state.view !== "AYAH") return;
+      const surahId = state.selectedSurahId;
+      const verses = getVerses(surahId);
+      const v = verses[state.selectedAyahIndex];
+      if(!v) return;
+
+      setRead(surahId, v.ayah, false);
+      openAyah(state.selectedAyahIndex); // refresh
+    });
+
+    $("searchInput").addEventListener("input", (e)=>{
+      state.search = e.target.value || "";
+      // yalnız home/surah listesinde sure listesi gösteriliyorsa filtrelesin
+      if(state.view === "HOME"){
+        renderSurahList();
+      }else{
+        // surah/ayah modunda: arama yine sure listesine etkilesin mi?
+        // burada basit: sadece HOME’da filtreliyoruz (kafa karışmasın)
+      }
+    });
+
+    $("btnClearToday").addEventListener("click", ()=>{
+      state.today = { date: todayKey(), items: [] };
+      saveToday();
+      renderToday();
     });
 
     /***********************
      *  INIT
      ***********************/
+    renderToday();
     renderHome();
   </script>
 </body>
