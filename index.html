@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ramazan Kur’an Okuma | v0.1</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f4f6f8;
+      --card:#ffffff;
+      --muted:#6c757d;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 20px;
+    }
+    body{
+      background: radial-gradient(1200px 600px at 10% 10%, #ffffff 0%, var(--bg) 55%, #eef2f6 100%);
+      min-height:100vh;
+    }
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:rgba(244,246,248,.75);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .cardx{
+      background:var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border:1px solid rgba(0,0,0,.06);
+    }
+    .screen{ display:none; width:100%; }
+    .screen.active{ display:block; }
+
+    @media (min-width: 992px){
+      .two-col{
+        display:grid;
+        grid-template-columns: 1.25fr .75fr;
+        gap: 1.25rem;
+        align-items:stretch;
+      }
+    }
+
+    .sure-pill{
+      border-radius:999px;
+      padding:.5rem .85rem;
+      border:1px solid rgba(0,0,0,.10);
+      background:#fff;
+      font-weight:800;
+      display:inline-flex;
+      gap:.5rem;
+      align-items:center;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .sure-pill:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.08); }
+
+    .ayat-btn{
+      text-align:left;
+      width:100%;
+      border-radius: 14px;
+      padding: .85rem 1rem;
+      font-weight: 800;
+      background: #f8f9fb;
+      border: 2px solid rgba(0,0,0,.10);
+      transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+    }
+    .ayat-btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,.08);
+      background:#fff;
+      border-color: rgba(0,0,0,.18);
+    }
+
+    .muted{ color: var(--muted); }
+    .meal{
+      font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+      line-height: 1.55;
+      font-weight: 650;
+      letter-spacing: -.01em;
+    }
+    .meta{
+      font-size: .92rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar py-3">
+    <div class="container-fluid px-3 px-md-4 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-dark rounded-pill">RAMAZAN v1.1</span>
+        <span class="fw-bold">Kur’an Okuma Modülü | Sol: Ayet / Sağ: İndeks</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span id="crumbPill" class="badge text-bg-light border text-dark">Ana İndeks</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid px-3 px-md-4 py-4">
+    <div class="two-col">
+
+      <!-- LEFT: CONTENT -->
+      <div class="cardx p-4">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div>
+            <div class="fw-bold fs-4" id="leftTitle">Hoş geldin 👋</div>
+            <div class="muted" id="leftSubtitle">Sağdan bir sure seç; sonra ayet seç.</div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <button id="btnBackHome" class="btn btn-outline-secondary fw-bold">Ana indekse dön</button>
+            <button id="btnBackSurah" class="btn btn-outline-secondary fw-bold d-none">Sure indeksine dön</button>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div id="leftBody">
+          <div class="alert alert-secondary mb-0">
+            Sağ panelden bir sure seçerek başlayabilirsin.  
+            Ayet seçtiğinde burada Türkçe meal + dipnot/ek bilgiler görünecek.
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="d-flex flex-wrap gap-2 justify-content-between">
+          <button id="btnPrev" class="btn btn-dark fw-bold" disabled>← Önceki ayet</button>
+          <button id="btnNext" class="btn btn-dark fw-bold" disabled>Sonraki ayet →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: NAV -->
+      <div class="cardx p-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="fw-bold fs-5" id="rightTitle">Sureler (A-Z)</div>
+          <span class="badge text-bg-dark rounded-pill" id="rightBadge">0</span>
+        </div>
+        <div class="muted mt-1" id="rightHint">Bir sure seç.</div>
+
+        <hr class="my-3">
+
+        <div id="rightBody" class="d-flex flex-wrap gap-2"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     *  DATA (SEN DOLDURACAKSIN)
+     ***********************/
+    // DB yapısı:
+    // DB.surahs = [{ id, nameTr, order, letter, ayatCount? }]
+    // DB.verses[surahId] = [{ ayah, mealTr, info, footnote }]
+    const DB = {
+      surahs: [
+        { id: "fatiha", nameTr: "Fâtiha", order: 1, letter: "F" },
+        { id: "ikhlas", nameTr: "İhlâs", order: 112, letter: "İ" },
+      ],
+      verses: {
+        fatiha: [
+          { ayah: 1, mealTr: "Rahmân ve Rahîm olan Allah’ın adıyla.", info: "Kısa not: besmele.", footnote: "Dipnot örneği." },
+          { ayah: 2, mealTr: "Hamd âlemlerin Rabbi Allah’a mahsustur.", info: "Hamd kavramı.", footnote: "" },
+          { ayah: 3, mealTr: "O, Rahmân’dır ve Rahîm’dir.", info: "", footnote: "" },
+        ],
+        ikhlas: [
+          { ayah: 1, mealTr: "De ki: O Allah birdir.", info: "", footnote: "" },
+          { ayah: 2, mealTr: "Allah Samed’dir.", info: "Samed: Her şeyin O’na muhtaç olması.", footnote: "" },
+          { ayah: 3, mealTr: "Doğurmamış ve doğurulmamıştır.", info: "", footnote: "" },
+          { ayah: 4, mealTr: "Hiçbir şey O’na denk değildir.", info: "", footnote: "" },
+        ],
+      }
+    };
+
+    /***********************
+     *  STATE
+     ***********************/
+    const state = {
+      view: "HOME",       // HOME | SURAH | AYAH
+      selectedSurahId: null,
+      selectedAyahIndex: null, // index in DB.verses[surahId]
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    /***********************
+     *  RENDERERS
+     ***********************/
+    function setCrumb(text){
+      $("crumbPill").textContent = text;
+    }
+
+    function renderHome(){
+      state.view = "HOME";
+      state.selectedSurahId = null;
+      state.selectedAyahIndex = null;
+
+      setCrumb("Ana İndeks");
+      $("btnBackSurah").classList.add("d-none");
+
+      $("leftTitle").textContent = "Hoş geldin 👋";
+      $("leftSubtitle").textContent = "Sağdan bir sure seç; sonra ayet seç.";
+
+      $("leftBody").innerHTML = `
+        <div class="alert alert-secondary mb-0">
+          Sağ panelden bir sure seçerek başlayabilirsin.  
+          Ayet seçtiğinde burada Türkçe meal + dipnot/ek bilgiler görünecek.
+        </div>
+      `;
+
+      $("btnPrev").disabled = true;
+      $("btnNext").disabled = true;
+
+      renderSurahList();
+    }
+
+    function renderSurahList(){
+      $("rightTitle").textContent = "Sureler (A-Z)";
+      $("rightHint").textContent = "Bir sure seç.";
+      const body = $("rightBody");
+      body.innerHTML = "";
+
+      // alfabetik
+      const sorted = DB.surahs.slice().sort((a,b)=> a.nameTr.localeCompare(b.nameTr, "tr"));
+      $("rightBadge").textContent = sorted.length;
+
+      sorted.forEach(s=>{
+        const count = (DB.verses[s.id] || []).length;
+        const el = document.createElement("div");
+        el.className = "sure-pill";
+        el.innerHTML = `
+          <span class="badge text-bg-dark rounded-pill">${escapeHtml(s.letter)}</span>
+          <span>${escapeHtml(s.nameTr)}</span>
+          <span class="badge text-bg-light border text-dark">${count}</span>
+        `;
+        el.addEventListener("click", ()=> openSurah(s.id));
+        body.appendChild(el);
+      });
+    }
+
+    function openSurah(surahId){
+      state.view = "SURAH";
+      state.selectedSurahId = surahId;
+      state.selectedAyahIndex = null;
+
+      const s = DB.surahs.find(x=>x.id===surahId);
+      const verses = DB.verses[surahId] || [];
+
+      setCrumb(`Sure: ${s?.nameTr || "-"}`);
+      $("btnBackSurah").classList.add("d-none");
+
+      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet listesi`;
+      $("leftSubtitle").textContent = `Toplam kayıtlı ayet: ${verses.length}`;
+
+      $("leftBody").innerHTML = `
+        <div class="cardx p-3">
+          <div class="fw-bold mb-2">Ayet seç</div>
+          <div class="muted">Sağ panelden ayet numarasına tıklayarak meali aç.</div>
+        </div>
+      `;
+
+      $("btnPrev").disabled = true;
+      $("btnNext").disabled = true;
+
+      renderAyahList(surahId);
+    }
+
+    function renderAyahList(surahId){
+      const s = DB.surahs.find(x=>x.id===surahId);
+      const verses = DB.verses[surahId] || [];
+
+      $("rightTitle").textContent = `${s?.nameTr || "Sure"} — Ayetler`;
+      $("rightHint").textContent = "Bir ayet seç.";
+      $("rightBadge").textContent = verses.length;
+
+      const body = $("rightBody");
+      body.innerHTML = "";
+
+      verses.forEach((v, idx)=>{
+        const btn = document.createElement("button");
+        btn.className = "ayat-btn btn";
+        btn.innerHTML = `<span class="badge text-bg-dark rounded-pill me-2">${v.ayah}</span> <span class="fw-bold">Ayet ${v.ayah}</span>`;
+        btn.addEventListener("click", ()=> openAyah(idx));
+        body.appendChild(btn);
+      });
+
+      // sağ panelde üstte “sure indeksine dön” gibi bir mini buton da ekleyelim:
+      const back = document.createElement("button");
+      back.className = "btn btn-outline-secondary fw-bold w-100 mt-2";
+      back.textContent = "← Sure listesine dön";
+      back.addEventListener("click", ()=>{
+        // surah listesine dön (home değil)
+        state.view = "HOME";
+        state.selectedSurahId = null;
+        state.selectedAyahIndex = null;
+        setCrumb("Ana İndeks");
+        $("btnBackSurah").classList.add("d-none");
+        $("leftTitle").textContent = "Sure seç";
+        $("leftSubtitle").textContent = "Sağdan bir sure seç.";
+        $("leftBody").innerHTML = `<div class="alert alert-secondary mb-0">Sağ panelden bir sure seç.</div>`;
+        $("btnPrev").disabled = true;
+        $("btnNext").disabled = true;
+        renderSurahList();
+      });
+      body.appendChild(back);
+    }
+
+    function openAyah(index){
+      state.view = "AYAH";
+      state.selectedAyahIndex = index;
+
+      const surahId = state.selectedSurahId;
+      const s = DB.surahs.find(x=>x.id===surahId);
+      const verses = DB.verses[surahId] || [];
+      const v = verses[index];
+
+      setCrumb(`${s?.nameTr || "Sure"} / Ayet ${v?.ayah ?? "-"}`);
+      $("btnBackSurah").classList.remove("d-none");
+
+      $("leftTitle").textContent = `${s?.nameTr || "Sure"} — Ayet ${v?.ayah ?? ""}`;
+      $("leftSubtitle").textContent = "Türkçe meal";
+
+      $("leftBody").innerHTML = `
+        <div class="cardx p-4">
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
+            <div class="fw-bold fs-5">${escapeHtml(s?.nameTr || "")}</div>
+            <span class="badge text-bg-dark rounded-pill">Ayet ${v?.ayah ?? ""}</span>
+          </div>
+
+          <div class="meal">${escapeHtml(v?.mealTr || "—")}</div>
+
+          <hr class="my-3">
+
+          <div class="meta">
+            <div><span class="fw-bold">Ek bilgi:</span> ${escapeHtml(v?.info || "—")}</div>
+            <div class="mt-2"><span class="fw-bold">Dipnot:</span> ${escapeHtml(v?.footnote || "—")}</div>
+          </div>
+        </div>
+      `;
+
+      // prev/next
+      $("btnPrev").disabled = (index <= 0);
+      $("btnNext").disabled = (index >= verses.length - 1);
+    }
+
+    function escapeHtml(s){
+      return (s||"").replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    /***********************
+     *  EVENTS
+     ***********************/
+    $("btnBackHome").addEventListener("click", renderHome);
+
+    $("btnBackSurah").addEventListener("click", ()=>{
+      // ayetten sure ayet listesine dön
+      if(state.selectedSurahId) openSurah(state.selectedSurahId);
+      else renderHome();
+    });
+
+    $("btnPrev").addEventListener("click", ()=>{
+      if(state.view !== "AYAH") return;
+      const i = state.selectedAyahIndex ?? 0;
+      if(i > 0) openAyah(i - 1);
+    });
+
+    $("btnNext").addEventListener("click", ()=>{
+      if(state.view !== "AYAH") return;
+      const surahId = state.selectedSurahId;
+      const verses = DB.verses[surahId] || [];
+      const i = state.selectedAyahIndex ?? 0;
+      if(i < verses.length - 1) openAyah(i + 1);
+    });
+
+    /***********************
+     *  INIT
+     ***********************/
+    renderHome();
+  </script>
+</body>
+</html>
