@@ -207,10 +207,10 @@
   <div class="topbar py-3">
     <div class="container-fluid px-3 px-md-4 d-flex align-items-center justify-content-between">
       <div class="brand-badge">
-        <span class="badge rounded-pill" style="background:var(--g900)">RAMAZAN v1.3</span>
+        <span class="badge rounded-pill" style="background:var(--g900)">RAMAZAN v1.4</span>
         <span>Kur’an Okuma Modülü | v0.3</span>
       </div>
-      <div class="crumb" id="crumbPill">Ana İndeks</div>
+      <div class="crumb" id="crumbPill">Ana İndeks</div><button id="btnAdmin" class="btn btn-sm btn-green-outline">Admin</button>
     </div>
   </div>
 
@@ -335,6 +335,246 @@
         ]
       }
     };
+
+    /***********************
+ * ADMIN PANEL (HTML DB ÜRETİCİ)
+ * - DB objesini RAM'de düzenler
+ * - Export ile kopyala-yapıştır JSON üretir
+ ***********************/
+
+// TR slug (id üretmek için)
+function slugifyTr(s){
+  return (s||"")
+    .toLocaleLowerCase("tr")
+    .replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s")
+    .replace(/ı/g,"i").replace(/ö/g,"o").replace(/ç/g,"c")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"")
+    .slice(0,40) || ("sure-" + Math.random().toString(16).slice(2,8));
+}
+
+// DB yardımcıları (sadece admin için)
+function admSortSurahs(){
+  DB.surahs = (DB.surahs||[]).slice().sort((a,b)=> a.nameTr.localeCompare(b.nameTr,"tr"));
+}
+
+function admEnsure(){
+  DB.surahs = DB.surahs || [];
+  DB.verses = DB.verses || {};
+}
+
+function admFillSurahSelect(){
+  admEnsure();
+  admSortSurahs();
+  const sel = $("admSurahSelect");
+  sel.innerHTML = "";
+  DB.surahs.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = `${s.nameTr} (id:${s.id})`;
+    sel.appendChild(opt);
+  });
+
+  // hiç sure yoksa boş bırak
+  if(DB.surahs.length === 0){
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Henüz sure yok";
+    sel.appendChild(opt);
+  }
+}
+
+function admSelectedSurahId(){
+  return $("admSurahSelect").value;
+}
+
+function admUpsertSurah(nameTr, order){
+  admEnsure();
+  const id = slugifyTr(nameTr);
+  const letter = (nameTr||"?").trim().charAt(0).toLocaleUpperCase("tr");
+  const obj = { id, nameTr, order: Number(order)||0, letter };
+
+  // id çakışırsa aynı sureyi günceller
+  const idx = DB.surahs.findIndex(s=>s.id===id);
+  if(idx >= 0) DB.surahs[idx] = obj;
+  else DB.surahs.push(obj);
+
+  DB.verses[id] = DB.verses[id] || [];
+}
+
+function admDeleteSurah(id){
+  admEnsure();
+  DB.surahs = DB.surahs.filter(s=>s.id !== id);
+  delete DB.verses[id];
+}
+
+function admUpsertAyah(surahId, ayahNo, mealTr, info, footnote){
+  admEnsure();
+  ayahNo = Number(ayahNo);
+  if(!surahId || !ayahNo || !mealTr) return;
+
+  DB.verses[surahId] = DB.verses[surahId] || [];
+
+  const arr = DB.verses[surahId].slice();
+  const m = new Map(arr.map(v=>[v.ayah, v]));
+  m.set(ayahNo, { ayah: ayahNo, mealTr, info: info||"", footnote: footnote||"" });
+
+  DB.verses[surahId] = Array.from(m.values()).sort((a,b)=>a.ayah-b.ayah);
+}
+
+function admDeleteAyah(surahId, ayahNo){
+  admEnsure();
+  ayahNo = Number(ayahNo);
+  DB.verses[surahId] = (DB.verses[surahId]||[]).filter(v=>v.ayah !== ayahNo);
+}
+
+// Export: const DB = {...} formatında kopyalanabilir çıktı
+function admExportDB(){
+  admEnsure();
+
+  // Düzen: surahlar A-Z, ayetler ayah no
+  admSortSurahs();
+  for(const sid of Object.keys(DB.verses)){
+    DB.verses[sid] = (DB.verses[sid]||[]).slice().sort((a,b)=>a.ayah-b.ayah);
+  }
+
+  const json = JSON.stringify(DB, null, 2);
+  // Kullanıcı HTML'e direkt yapıştırabilsin diye "const DB = ..." ile veriyoruz:
+  return `const DB = ${json};`;
+}
+
+// Import: JSON’u panele yükle (kontrol / devam)
+function admImportDB(text){
+  const t = (text||"").trim();
+  if(!t) throw new Error("JSON boş.");
+
+  // Kullanıcı "const DB = {...};" yapıştırabilir -> onu temizle
+  const cleaned = t
+    .replace(/^const\s+DB\s*=\s*/i, "")
+    .replace(/;?\s*$/,"");
+
+  const obj = JSON.parse(cleaned);
+
+  // Basit doğrulama
+  if(!obj || typeof obj !== "object") throw new Error("Geçersiz JSON.");
+  if(!Array.isArray(obj.surahs)) obj.surahs = [];
+  if(!obj.verses || typeof obj.verses !== "object") obj.verses = {};
+
+  // DB'ye bas
+  DB.surahs = obj.surahs;
+  DB.verses = obj.verses;
+
+  admEnsure();
+  admSortSurahs();
+}
+
+/***********************
+ * ADMIN EVENTS
+ ***********************/
+$("btnAdmin").addEventListener("click", ()=>{
+  admFillSurahSelect();
+  const modal = new bootstrap.Modal(document.getElementById("adminModal"));
+  modal.show();
+});
+
+$("admAddSurah").addEventListener("click", ()=>{
+  const name = $("admSurahName").value.trim();
+  const order = $("admSurahOrder").value;
+  if(!name) return alert("Sure adı gerekli.");
+
+  admUpsertSurah(name, order);
+  admFillSurahSelect();
+
+  // UI tarafını da tazele (arama + listeler)
+  renderSurahList();
+  renderSearchResults();
+
+  alert("Sure eklendi. (Kalıcı olması için DB JSON Üret → HTML’e yapıştır)");
+});
+
+$("admDeleteSurah").addEventListener("click", ()=>{
+  const sid = admSelectedSurahId();
+  if(!sid) return;
+  if(!confirm("Seçili sure silinecek. Emin misin?")) return;
+
+  admDeleteSurah(sid);
+  admFillSurahSelect();
+
+  // UI tazele
+  renderSurahList();
+  renderSearchResults();
+  renderHome();
+
+  alert("Sure silindi. (Kalıcı olması için DB JSON Üret → HTML’e yapıştır)");
+});
+
+$("admUpsertAyah").addEventListener("click", ()=>{
+  const sid = admSelectedSurahId();
+  const no = $("admAyahNo").value;
+  const meal = $("admMeal").value.trim();
+  const info = $("admInfo").value.trim();
+  const foot = $("admFoot").value.trim();
+
+  if(!sid) return alert("Sure seç.");
+  if(!no) return alert("Ayet no gerekli.");
+  if(!meal) return alert("Meal gerekli.");
+
+  admUpsertAyah(sid, no, meal, info, foot);
+
+  // UI tazele
+  if(state.selectedSurahId === sid) openSurah(sid);
+  else renderSurahList();
+
+  renderSearchResults();
+
+  alert("Ayet kaydedildi. (Kalıcı olması için DB JSON Üret → HTML’e yapıştır)");
+});
+
+$("admDeleteAyah").addEventListener("click", ()=>{
+  const sid = admSelectedSurahId();
+  const no = $("admAyahNo").value;
+
+  if(!sid || !no) return alert("Sure ve ayet no gerekli.");
+  if(!confirm("Bu ayet silinecek. Emin misin?")) return;
+
+  admDeleteAyah(sid, no);
+
+  if(state.selectedSurahId === sid) openSurah(sid);
+  else renderSurahList();
+
+  renderSearchResults();
+
+  alert("Ayet silindi. (Kalıcı olması için DB JSON Üret → HTML’e yapıştır)");
+});
+
+$("admExportDB").addEventListener("click", ()=>{
+  const out = admExportDB();
+  $("admJsonBox").value = out;
+
+  // otomatik kopyalama denemesi (tarayıcı izin verirse)
+  try{
+    navigator.clipboard.writeText(out);
+  }catch(e){}
+
+  alert("DB çıktı üretildi. Şimdi bunu kopyalayıp HTML’deki DB bloğunun yerine yapıştır.");
+});
+
+$("admImportDB").addEventListener("click", ()=>{
+  try{
+    admImportDB($("admJsonBox").value);
+    admFillSurahSelect();
+
+    // UI refresh
+    renderHome();
+    renderSurahList();
+    renderSearchResults();
+    renderToday();
+
+    alert("JSON yüklendi. (Bu da dosyaya yazmaz; istersen tekrar export edip HTML’e yapıştır)");
+  }catch(e){
+    alert("Import hata: " + e.message);
+  }
+});
 
     const LS_READ = "quran_read_map_v1";
     const LS_TODAY = "quran_today_list_v1";
@@ -808,5 +1048,84 @@
     renderToday();
     renderHome();
   </script>
+  <!-- ADMIN MODAL (DB JSON üretir) -->
+<div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:18px;">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Admin Panel (HTML DB Üretici)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-secondary">
+          Burada girdiğin veriler <b>dosyaya otomatik yazılmaz</b>.
+          “DB JSON Üret” ile çıkan metni kopyalayıp <b>HTML içindeki DB bloğunun yerine</b> yapıştıracaksın.
+        </div>
+
+        <div class="row g-3">
+          <!-- SURAH SIDE -->
+          <div class="col-md-5">
+            <div class="fw-bold mb-2">Sureler</div>
+            <select id="admSurahSelect" class="form-select mb-2"></select>
+
+            <div class="cardx p-3" style="background:var(--gray100)">
+              <div class="fw-bold mb-2">Sure Ekle</div>
+              <input id="admSurahName" class="form-control mb-2" placeholder="Sure adı (örn: Bakara)" />
+              <input id="admSurahOrder" type="number" class="form-control mb-2" placeholder="Sıra (örn: 2)" />
+              <button id="admAddSurah" class="btn btn-green w-100">Sure Ekle</button>
+
+              <button id="admDeleteSurah" class="btn btn-outline-danger w-100 mt-2">Seçili Sureyi Sil</button>
+            </div>
+          </div>
+
+          <!-- AYAH SIDE -->
+          <div class="col-md-7">
+            <div class="fw-bold mb-2">Ayet Ekle / Güncelle / Sil</div>
+
+            <div class="row g-2">
+              <div class="col-4">
+                <input id="admAyahNo" type="number" class="form-control" placeholder="Ayet no" />
+              </div>
+              <div class="col-8">
+                <input id="admInfo" class="form-control" placeholder="Ek bilgi (opsiyonel)" />
+              </div>
+              <div class="col-12">
+                <textarea id="admMeal" class="form-control" rows="3" placeholder="Türkçe meal"></textarea>
+              </div>
+              <div class="col-12">
+                <textarea id="admFoot" class="form-control" rows="2" placeholder="Dipnot (opsiyonel)"></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              <button id="admUpsertAyah" class="btn btn-green flex-fill">Kaydet (Ekle/Güncelle)</button>
+              <button id="admDeleteAyah" class="btn btn-outline-danger flex-fill">Sil</button>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="fw-bold mb-2">DB Çıktısı</div>
+            <div class="d-flex gap-2">
+              <button id="admExportDB" class="btn btn-green-outline flex-fill">DB JSON Üret</button>
+              <button id="admImportDB" class="btn btn-green-outline flex-fill">JSON’u Panele Yükle</button>
+            </div>
+
+            <textarea id="admJsonBox" class="form-control mt-2" rows="10"
+              placeholder="DB JSON burada oluşur. Kopyala → HTML’deki DB bloğunun yerine yapıştır."></textarea>
+
+            <div class="muted mt-2" style="font-size:.92rem">
+              İpucu: “DB JSON Üret” sonrası çıkan metni <b>const DB = ...</b> bölümüne yapıştır.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-green-outline" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
